@@ -81,12 +81,12 @@ setup.bat
 
 ```json
 {
-  "serverHost": "192.168.10.150",  // 改成你的服务器 IP/域名
+  "serverHost": "127.0.0.1",   // 改成你的服务器 IP/域名
   "serverPort": 27081,
-  "pushIntervalMs": 25,            // 推送间隔（25≈40fps；断流时调大到 33/50）
+  "pushIntervalMs": 25,        // 推送间隔（25≈40fps；断流时调大到 33/50）
   "clientName": "radar-1",
   "device": "FPGA",
-  "autoUpdateOffsets": true        // 自动从 a2x/cs2-dumper 更新偏移量
+  "autoUpdateOffsets": true    // 自动从 a2x/cs2-dumper 更新偏移量
 }
 ```
 
@@ -108,7 +108,7 @@ run.bat                 # 以管理员身份运行
 
 ```
 [+] VMM initialized successfully!
-[+] Connected to radar server: ws://192.168.10.150:27081/push?name=radar-1
+[+] Connected to radar server: ws://<服务器IP>:27081/push?name=radar-1
 [+] Attached to cs2.exe (pid=19600)
 [+] push=520 fps=29.2 ws=true game=true map=de_dust2 players=10
 ```

@@ -1,5 +1,5 @@
 {
-  "serverHost": "192.168.10.150",
+  "serverHost": "127.0.0.1",
   "serverPort": 27081,
   "pushIntervalMs": 25,
   "clientName": "radar-1",
