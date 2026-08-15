@@ -1,0 +1,17 @@
+{
+  "name": "cs2-dma-radar-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CS2 DMA Radar server: receives frames pushed by the radar client over WebSocket and re-broadcasts them to browser viewers, and serves the built web frontend.",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "ws": "^8.17.1"
+  }
+}

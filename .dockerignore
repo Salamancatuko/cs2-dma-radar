@@ -1,0 +1,13 @@
+node_modules
+dist
+target
+public
+.git
+.m2repo
+repo.tar.gz
+maven.zip
+apache-maven-*
+ref-cs2-dma-radar
+cs2-dma-radar-main
+*.log
+dependency-reduced-pom.xml

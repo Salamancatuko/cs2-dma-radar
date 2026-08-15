@@ -1,0 +1,21 @@
+{
+  "dwLocalPlayerPawn": "0x23a9118",
+  "dwEntityList": "0x2554050",
+  "dwGameTypes": "0x1adf80",
+  "dwGlobalVars": "0x2094d38",
+  "m_iHealth": "0x34c",
+  "m_iPawnArmor": "0x924",
+  "m_lifeState": "0x354",
+  "m_angEyeAngles": "0x3350",
+  "m_iTeamNum": "0x3e7",
+  "m_hPlayerPawn": "0x914",
+  "m_vOldOrigin": "0x13b8",
+  "m_iCompTeammateColor": "0x850",
+  "m_iszPlayerName": "0x6f4",
+  "m_pDamageServices": "0x828",
+  "m_DamageList": "0x48",
+  "m_hPlayerControllerDamager": "0x38",
+  "m_hPlayerControllerRecipient": "0x3c",
+  "m_szPlayerRecipientName": "0x48",
+  "m_szPlayerDamagerName": "0x40"
+}

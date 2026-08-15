@@ -1,0 +1,8 @@
+﻿node_modules/
+target/
+server/public/
+dist/
+*.log
+.idea/
+.vscode/
+dependency-reduced-pom.xml

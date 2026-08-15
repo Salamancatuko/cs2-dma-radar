@@ -1,0 +1,17 @@
+# CS2 DMA Radar - one-command server deployment
+#   docker compose up -d --build
+# Web UI will be at http://<server-ip>:8080
+services:
+  radar-server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    container_name: cs2-dma-radar-server
+    ports:
+      - "27081:27081"
+    environment:
+      PORT: "27081"
+      HOST: "0.0.0.0"
+      # how often the server re-broadcasts the latest frame to browsers (~60 fps)
+      BROADCAST_INTERVAL_MS: "16"
+    restart: unless-stopped

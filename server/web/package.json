@@ -1,0 +1,21 @@
+{
+  "name": "cs2-dma-radar-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CS2 DMA Radar web frontend (browser side of the radar).",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "leaflet": "^1.9.4",
+    "leaflet-rotatedmarker": "^0.2.0",
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "vite": "^5.4.11"
+  }
+}
