@@ -21,30 +21,84 @@
                                                                      └─────────────────┘
 ```
 
+**需要三台设备**：游戏机（插 DMA 卡，跑 CS2）、雷达机（连 DMA 卡，跑 `client/`）、
+服务器（跑 `server/`，任何有公网/局域网 IP 的机器，可用 Docker）。也可把服务器
+和雷达机放在同一台机器（用 `127.0.0.1`）。
+
+---
+
+## 零、别人 Clone 后：从零到能用（5 步）
+
+> 假设你已有一台跑 CS2 的游戏机（DMA 卡已插）、一台连 DMA 卡的雷达机（Windows）、
+> 一台服务器（可选 Docker）。
+
+```bash
+git clone git@github.com:Salamancatuko/cs2-dma-radar.git
+cd cs2-dma-radar
+```
+
+### 第 0 步：准备环境
+
+| 设备 | 需要 | 备注 |
+| --- | --- | --- |
+| 服务器 | Docker（推荐）或 Node.js ≥ 18 | 无 Docker 也能直接跑 |
+| 雷达机 | JDK 17+、DMA 工具包（`vmm.dll`/`leechcore.dll`/`FTD3XX.dll`） | 工具包路径可在 `client/setup.bat` 里改 |
+| 浏览器设备 | 无 | 手机/电脑都能看 |
+
+### 第 1 步：启动服务器
+
+```bash
+docker compose up -d --build
+# 网页:  http://<服务器IP>:27081
+# 状态:  http://<服务器IP>:27081/api/status
+```
+
+先开浏览器确认网页能打开（此时显示「采集端离线」是正常的）。
+
+### 第 2 步：配置客户端（雷达机）
+
+```bat
+cd client
+setup.bat                 REM 复制 FTD3XX.dll 到 .\vmm\（注意：vmm/leechcore 用仓库内置标准版）
+REM 用记事本编辑 config.json：
+REM   "serverHost": 改成服务器的 IP（局域网/公网/域名，同机用 127.0.0.1）
+mvnw.cmd package          REM 构建（首次会自动下载 Maven 与依赖，需联网）
+run.bat                   REM 以管理员身份运行
+```
+
+### 第 3 步：防火墙放行 27081
+
+服务器防火墙（及云服务器安全组）放行 **TCP 27081**，否则客户端/浏览器连不上。
+
+### 第 4 步：验证
+
+- 客户端日志出现 `Connected to radar server: ws://<服务器IP>:27081/push?name=radar-1`
+  且 `ws=true`、`fps` 有数值；
+- 打开 `http://<服务器IP>:27081/api/status`，`"clientConnected": true`；
+- 游戏内进入对局，网页即显示地图与玩家。
+
+> 详细排查见「三、重新配置 IP 完整教程」。
+
 ---
 
 ## 一、部署服务器（server/，端口 27081）
 
 ### 方式 A：Docker（推荐）
 
-在仓库根目录（含 `server/` 与 `docker-compose.yml`）：
-
 ```bash
 docker compose up -d --build
 ```
 
-- 网页：`http://<服务器IP>:27081`
-- 状态接口：`http://<服务器IP>:27081/api/status`
-- 停止：`docker compose down`；查看日志：`docker logs -f cs2-dma-radar-server`
+- 网页：`http://<服务器IP>:27081`；状态：`http://<服务器IP>:27081/api/status`
+- 停止：`docker compose down`；日志：`docker logs -f cs2-dma-radar-server`
 
-> 镜像为多阶段构建：先在容器内编译 Vue 前端（`server/web/`），再运行 Node 中继；
-> 无需在服务器上安装 Node。
+> 多阶段构建：容器内先编译 Vue 前端（`server/web/`）再运行 Node 中继，服务器无需装 Node。
 
 ### 方式 B：直接运行（需要 Node.js ≥ 18）
 
 ```bash
 cd server/web && npm install && npm run build   # 前端产物输出到 server/public
-cd ../..                                        # 回到 server/
+cd ../..
 cd server && npm install && npm start           # 默认监听 27081
 ```
 
@@ -64,7 +118,8 @@ cd server && npm install && npm start           # 默认监听 27081
 
 - JDK 17+（[Temurin](https://adoptium.net/temurin/releases/)）
 - DMA 卡已插入游戏机，雷达机通过 USB3.0 与卡连接
-- DMA 工具包：`C:\Users\Salam\Desktop\DMA`（含 `vmm.dll`、`leechcore.dll`、`FTD3XX.dll`）
+- DMA 工具包：`C:\Users\Salam\Desktop\DMA`（含 `vmm.dll`、`leechcore.dll`、`FTD3XX.dll`；
+  路径不同时改 `setup.bat` 顶部的 `SRC`）
 
 ### 1. 准备 DLL
 
@@ -73,15 +128,15 @@ cd client
 setup.bat
 ```
 
-脚本会把 `C:\Users\Salam\Desktop\DMA\FTD3XX.dll`（FTDI USB3 驱动）复制到 `client\vmm\`。
+`setup.bat` 把工具包里的 `FTD3XX.dll`（FTDI USB3 驱动）复制到 `client\vmm\`。
 `vmm.dll` / `leechcore.dll` 使用仓库内置的**标准 MemProcFS 版本**（已匹配 JNA 绑定），
-**不要**用 DMA 工具包自带的版本覆盖（旧版/定制版会在 `VMMDLL_ConfigGet` 崩溃）。
+**不要**用工具包自带的版本覆盖（旧版/定制版会在 `VMMDLL_ConfigGet` 崩溃）。
 
 ### 2. 配置 config.json
 
 ```json
 {
-  "serverHost": "127.0.0.1",   // 改成你的服务器 IP/域名
+  "serverHost": "127.0.0.1",   // 服务器 IP/域名
   "serverPort": 27081,
   "pushIntervalMs": 25,        // 推送间隔（25≈40fps；断流时调大到 33/50）
   "clientName": "radar-1",
@@ -90,17 +145,10 @@ setup.bat
 }
 ```
 
-### 3. 构建
+### 3. 构建 & 运行
 
 ```bat
 mvnw.cmd package        # 产物：client/target/cs2-dma-client.jar
-```
-
-（也可 `mvn package`。构建需要联网下载依赖；`mvnw` 会自动下载 Maven。）
-
-### 4. 运行
-
-```bat
 run.bat                 # 以管理员身份运行
 ```
 
@@ -113,12 +161,55 @@ run.bat                 # 以管理员身份运行
 [+] push=520 fps=29.2 ws=true game=true map=de_dust2 players=10
 ```
 
-> 客户端不包含任何网页代码，只读取内存并推送；游戏未运行时会发送心跳帧，
-> 网页可区分「采集端在线但无游戏」。
+> 客户端不包含任何网页代码；游戏未运行时会发送心跳帧，网页可区分「在线但无游戏」。
 
 ---
 
-## 三、网页端功能
+## 三、重新配置 IP 完整教程
+
+> 适用：换服务器、换网络、局域网改公网/云服务器、或同机部署。只需改**客户端**的
+> `serverHost`；**服务器无需改任何 IP**（监听 0.0.0.0）。
+
+### 第 1 步：确定服务器 IP
+
+- **Linux**：`ip addr` 或 `hostname -I`；
+- **Windows**：`ipconfig`（IPv4 地址）；
+- **云服务器/公网**：用公网 IP 或域名；
+- **同机**：`127.0.0.1`。
+
+### 第 2 步：修改 client/config.json
+
+```json
+{ "serverHost": "192.168.1.100", "serverPort": 27081, ... }
+```
+
+保存后**重启客户端**，日志出现 `Connected to radar server: ws://<新IP>:27081/...` 即成功。
+
+### 第 3 步：防火墙放行 27081
+
+- **Linux ufw**：`sudo ufw allow 27081/tcp`
+- **firewalld**：`sudo firewall-cmd --permanent --add-port=27081/tcp && sudo firewall-cmd --reload`
+- **Windows**：防火墙高级设置 → 入站规则 → 新建 → 端口 TCP 27081 → 允许
+- **云服务器**：控制台安全组放行 TCP 27081（入方向）
+
+### 第 4 步：验证
+
+1. 浏览器打开 `http://<服务器IP>:27081`（应看到雷达页面）；
+2. 打开 `/api/status`，客户端连接后 `"clientConnected": true`；
+3. 客户端日志 `ws=true` 且 fps 正常。
+
+### 常见问题
+
+| 现象 | 原因与解决 |
+| --- | --- |
+| 网页打不开 | 服务器未启动 / 防火墙未放行；`docker ps` 确认容器在运行 |
+| 网页能开但「采集端离线」 | `serverHost` 写错、客户端没重启、两台机器网络不通（先互相 `ping`） |
+| 日志反复 connect failed | 检查 IP/端口/防火墙 |
+| 局域网能看、外网看不了 | 路由器端口转发 27081 到服务器，或用云服务器公网 IP |
+
+---
+
+## 四、网页端功能
 
 - 雷达地图（9 张竞技图，含 nuke/vertigo 双层切换）、旋转、范围调整；
 - 玩家标记：头顶昵称（CT 蓝 / T 黄）、血量（低血变红）、本地/队友/敌人图标；
@@ -129,14 +220,12 @@ run.bat                 # 以管理员身份运行
 
 ---
 
-## 四、常见问题
+## 五、常见问题
 
-- **网页显示「采集端离线」**：检查 `config.json` 的 `serverHost`/`serverPort`，
-  服务器防火墙放行 27081；
-- **客户端提示 VMM 初始化失败**：确认 `client/vmm\` 下有 `vmm.dll`、`leechcore.dll`、
-  `FTD3XX.dll`（运行 `setup.bat`），DMA 卡已插入且以管理员运行；
 - **断流（网页地图/玩家消失）**：多为 DMA 读取量超过卡片上限，把 `pushIntervalMs`
   调大到 33/50 降低帧率；客户端会自动重连恢复；
+- **客户端提示 VMM 初始化失败**：确认 `client/vmm\` 下有 `vmm.dll`、`leechcore.dll`、
+  `FTD3XX.dll`（运行 `setup.bat`），DMA 卡已插入且以管理员运行；
 - **偏移量失效**：`autoUpdateOffsets` 会自动更新 `client/offsets.json`，
   也可手动从 [cs2-dumper](https://github.com/a2x/cs2-dumper) 获取；
 - **AMD CPU 需要 memmap**：把 `memmap.txt` 放到 `client/` 目录（见原仓库说明）；
